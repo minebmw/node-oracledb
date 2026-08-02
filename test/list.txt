@@ -6764,9 +6764,3 @@ Overview of node-oracledb functional tests
       326.2.1  check OpenTelemetry spans propagation
     326.3 appContext with pool
       326.3.1  check appContext with Pool acquire and release
-
-  328. authMessage.js
-    328.1 allows valid ORA_SDTZ timezone values
-    328.2 quotes ORA_SDTZ values that contain SQL metacharacters
-    328.3 formats the local timezone when ORA_SDTZ is not set
-    328.4 formats the local timezone when ORA_SDTZ is empty

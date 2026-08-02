@@ -11,14 +11,22 @@ Database.  Older versions of node-oracledb may work with older versions of
 Node.js.
 
 Node-oracledb supports basic and advanced features of Oracle Database
-and Oracle Client.  See the [homepage][4] for a list.
+and Oracle Client.  See the [homepage][4] for a list. It is used by many
+JavaScript and TypeScript frameworks, SQL generators, ORMs, and libraries.
+
+Node-oracledb has a rich feature set which is easy to use. It gives you
+control over SQL and PL/SQL statement execution, fast data ingestion, support
+for calling NoSQL-style document APIs, message queueing,database notifications
+and for starting and stopping the database.
+It also has high availability and security features. Database operations
+can optionally be [pipelined][16].
 
 The node-oracledb module is open source and maintained by Oracle Corp.
 It is stable, well documented, and has a comprehensive test suite.
 
 ## Installation
 
-Run `npm install oracledb`
+Run `npm install oracledb`.
 
 See [Getting Started with Node-oracledb][1] and [Quick Start Node-oracledb Installation][2].
 
@@ -42,7 +50,8 @@ See [Getting Started with Node-oracledb][1] and [Quick Start Node-oracledb Insta
   available when optional Oracle Client libraries are loaded by
   node-oracledb. Libraries are available in the free [Oracle Instant
   Client][15] packages. Node-oracledb can use Oracle Client libraries version
-  19 and later.
+  19 or later. Older node-oracledb versions supported older Client
+  versions.
 
 - Oracle Database
 
@@ -121,3 +130,4 @@ limitations under the License.
 [13]: https://github.com/oracle/node-oracledb/blob/main/SECURITY.md
 [14]: https://www.npmjs.com/package/oracledb
 [15]: https://www.oracle.com/database/technologies/instant-client.html
+[16]: https://node-oracledb.readthedocs.io/en/latest/user_guide/pipeline.html

@@ -19,17 +19,17 @@ node-oracledb `v7.1.0 <https://github.com/oracle/node-oracledb/compare/v7.0.1...
 Thin Mode Changes
 +++++++++++++++++
 
-#) Returned `undefined` instead of `null ` as the default value for the
-   ``enqTime`` property in 
-   :ref:`Advanced Queuing (AQ) messages <_aqmessage_class_attributes>`.
+#)  Returned `undefined` instead of `null ` as the default value for the
+    ``enqTime`` property in
+    :ref:`Advanced Queuing (AQ) messages <_aqmessage_class_attributes>`.
 
 Thick Mode Changes
 ++++++++++++++++++
 
-#) Fixed bug resulting in a random date value when getting the ``enqTime``
-   property for
-   :ref:`Advanced Queuing (AQ) messages <_aqmessage_class_attributes>` if the
-   value is not enqueued or available.
+#)  Fixed bug resulting in a random date value when getting the ``enqTime``
+    property for
+    :ref:`Advanced Queuing (AQ) messages <_aqmessage_class_attributes>` if the
+    value is not enqueued or available.
 
 
 node-oracledb `v7.0.1 <https://github.com/oracle/node-oracledb/compare/v7.0.0...v7.0.1>`__ (15 Jul 2025)
