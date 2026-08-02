@@ -222,6 +222,7 @@ describe('217. aq1.js', function() {
       delay: 5 // Delay the message by 5 seconds
     };
     const myMsg = await queue1.enqOne(message);
+    assert.strictEqual(myMsg.enqTime, undefined);
 
     /* Dequeue */
     const queue2 = await conn.getQueue(rawQueueName);

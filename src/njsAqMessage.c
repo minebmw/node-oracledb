@@ -90,7 +90,8 @@ const njsClassDef njsClassDefAqMessage = {
 //   Creates a new AQ message object given the ODPI-C handle.
 //-----------------------------------------------------------------------------
 bool njsAqMessage_createFromHandle(njsBaton *baton, dpiMsgProps *handle,
-        napi_env env, njsAqQueue *queue, napi_value *messageObj)
+        napi_env env, njsAqQueue *queue, napi_value *messageObj,
+        bool hasBeenDequeued)
 {
     njsAqMessage *msg;
 
@@ -103,6 +104,7 @@ bool njsAqMessage_createFromHandle(njsBaton *baton, dpiMsgProps *handle,
     msg->handle = handle;
     msg->objectType = queue->payloadObjectType;
     msg->isPayloadJsonType = queue->isJson;
+    msg->hasBeenDequeued = hasBeenDequeued;
 
     return true;
 }
@@ -168,12 +170,15 @@ NJS_NAPI_METHOD_IMPL_SYNC(njsAqMessage_getEnqTime, 0, NULL)
     dpiTimestamp timestamp;
     napi_value makeDateFn;
 
-    if (dpiMsgProps_getEnqTime(message->handle, &timestamp) < 0)
-        return njsUtils_throwErrorDPI(env, globals);
-    NJS_CHECK_NAPI(env, napi_get_reference_value(env,
-            globals->jsMakeDateFn, &makeDateFn))
-    return njsUtils_getDateValue(DPI_ORACLE_TYPE_TIMESTAMP, env,
-            makeDateFn, &timestamp, returnValue);
+    if (message->hasBeenDequeued) {
+        if (dpiMsgProps_getEnqTime(message->handle, &timestamp) < 0)
+            return njsUtils_throwErrorDPI(env, globals);
+        NJS_CHECK_NAPI(env, napi_get_reference_value(env,
+                globals->jsMakeDateFn, &makeDateFn))
+        return njsUtils_getDateValue(DPI_ORACLE_TYPE_TIMESTAMP, env,
+                makeDateFn, &timestamp, returnValue);
+    }
+    return true;
 }
 
 

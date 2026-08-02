@@ -1,4 +1,4 @@
-// Copyright (c) 2019, 2025, Oracle and/or its affiliates.
+// Copyright (c) 2019, 2026, Oracle and/or its affiliates.
 
 //-----------------------------------------------------------------------------
 //
@@ -386,7 +386,7 @@ static bool njsAqQueue_deqPostAsync(njsBaton *baton, napi_env env,
             result))
     for (i = 0; i < baton->numMsgProps; i++) {
         if (!njsAqMessage_createFromHandle(baton, baton->msgProps[i], env,
-                queue, &temp))
+                queue, &temp, true))
             return false;
         baton->msgProps[i] = NULL;
         NJS_CHECK_NAPI(env, napi_set_element(env, *result, i, temp))
@@ -466,7 +466,7 @@ static bool njsAqQueue_enqPostAsync(njsBaton *baton, napi_env env,
 
     for (i = 0; i < baton->numMsgProps; i++) {
         if (!njsAqMessage_createFromHandle(baton, baton->msgProps[i], env,
-                queue, &temp))
+                queue, &temp, false))
             return false;
         baton->msgProps[i] = NULL;
         NJS_CHECK_NAPI(env, napi_set_element(env, *result, i, temp))

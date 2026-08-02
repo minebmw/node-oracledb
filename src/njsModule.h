@@ -277,6 +277,7 @@ struct njsAqMessage {
     dpiMsgProps *handle;
     njsDbObjectType *objectType;
     bool isPayloadJsonType;
+    bool hasBeenDequeued;
 };
 
 // data for class AqQueue exposed to JS
@@ -833,7 +834,8 @@ bool njsDbObjectType_getFromClass(napi_env env, napi_value cls,
 // definition of functions for njsAqMessage class
 //-----------------------------------------------------------------------------
 bool njsAqMessage_createFromHandle(njsBaton *baton, dpiMsgProps *handle,
-        napi_env env, njsAqQueue *queue, napi_value *messageObj);
+        napi_env env, njsAqQueue *queue, napi_value *messageObj,
+        bool hasBeenDequeued);
 
 
 //-----------------------------------------------------------------------------
