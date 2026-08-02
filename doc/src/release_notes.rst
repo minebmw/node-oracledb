@@ -19,6 +19,10 @@ node-oracledb `v7.1.0 <https://github.com/oracle/node-oracledb/compare/v7.0.1...
 Thin Mode Changes
 +++++++++++++++++
 
+#)  Fixed bug where database object types with more than 100 attributes
+    are truncated or an error is thrown.
+    See `Issue #1782 <https://github.com/oracle/node-oracledb/issues/1782>`__.
+
 #)  Returned `undefined` instead of `null ` as the default value for the
     ``enqTime`` property in
     :ref:`Advanced Queuing (AQ) messages <_aqmessage_class_attributes>`.
