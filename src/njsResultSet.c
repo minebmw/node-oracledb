@@ -62,6 +62,8 @@ const njsClassDef njsClassDefResultSet = {
 };
 
 // other methods used internally
+static void njsResultSet_freeQueryVars(njsVariable *queryVars,
+        uint32_t numQueryVars);
 static bool njsResultSet_setFetchTypes(napi_env env, njsResultSet *rs,
         napi_value allMetadata);
 
@@ -109,6 +111,23 @@ static bool njsResultSet_closeAsync(njsBaton *baton)
 
 
 //-----------------------------------------------------------------------------
+// njsResultSet_freeQueryVars()
+//   Frees the query variables.
+//-----------------------------------------------------------------------------
+static void njsResultSet_freeQueryVars(njsVariable *queryVars,
+        uint32_t numQueryVars)
+{
+    uint32_t i;
+
+    if (!queryVars)
+        return;
+    for (i = 0; i < numQueryVars; i++)
+        njsVariable_free(&queryVars[i]);
+    free(queryVars);
+}
+
+
+//-----------------------------------------------------------------------------
 // njsResultSet_finalize()
 //   Invoked when the njsResultSet object is garbage collected.
 //-----------------------------------------------------------------------------
@@ -116,7 +135,6 @@ static void njsResultSet_finalize(napi_env env, void *finalizeData,
         void *finalizeHint)
 {
     njsResultSet *rs = (njsResultSet*) finalizeData;
-    uint32_t i;
 
     if (rs->handle) {
         dpiStmt_release(rs->handle);
@@ -124,12 +142,8 @@ static void njsResultSet_finalize(napi_env env, void *finalizeData,
     }
     // free the queryVars and nested buffers when an explicit close is not
     // called and the JS garbage collector does the clean-up
-    if (!rs->isNested && rs->queryVars) {
-        for (i = 0; i < rs->numQueryVars; i++)
-            njsVariable_free(&rs->queryVars[i]);
-        free(rs->queryVars);
-        rs->queryVars = NULL;
-        rs->numQueryVars = 0;
+    if (!rs->isNested) {
+        njsResultSet_freeQueryVars(rs->queryVars, rs->numQueryVars);
     }
     free(rs);
 }
@@ -213,7 +227,7 @@ static bool njsResultSet_getRowsPostAsync(njsBaton *baton, napi_env env,
 {
     njsResultSet *rs = (njsResultSet*) baton->callingInstance;
     napi_value rowObj, colObj;
-    uint32_t row, col, i;
+    uint32_t row, col;
     njsVariable *var;
 
     // set JavaScript values to simplify creation of returned objects
@@ -245,11 +259,7 @@ static bool njsResultSet_getRowsPostAsync(njsBaton *baton, napi_env env,
 
     // clear variables if result set was closed
     if (!rs->handle && !rs->isNested) {
-        for (i = 0; i < rs->numQueryVars; i++)
-            njsVariable_free(&rs->queryVars[i]);
-        free(rs->queryVars);
-        rs->queryVars = NULL;
-        rs->numQueryVars = 0;
+        njsResultSet_freeQueryVars(rs->queryVars, rs->numQueryVars);
     }
 
     return true;
@@ -259,7 +269,7 @@ static bool njsResultSet_getRowsPostAsync(njsBaton *baton, napi_env env,
 //-----------------------------------------------------------------------------
 // njsResultSet_new()
 //   Creates a new ResultSet object given the handle and variables that have
-// been built previously. It as assumed that the calling instance is a
+// been built previously. It is assumed that the calling instance is a
 // connection.
 //-----------------------------------------------------------------------------
 bool njsResultSet_new(njsBaton *baton, napi_env env, njsConnection *conn,

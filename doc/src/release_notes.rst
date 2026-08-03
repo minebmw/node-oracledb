@@ -35,7 +35,6 @@ Thick Mode Changes
     :ref:`Advanced Queuing (AQ) messages <_aqmessage_class_attributes>` if the
     value is not enqueued or available.
 
-
 node-oracledb `v7.0.1 <https://github.com/oracle/node-oracledb/compare/v7.0.0...v7.0.1>`__ (15 Jul 2025)
 -----------------------------------------------------------------------------------------------------------
 

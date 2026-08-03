@@ -28,9 +28,9 @@
  * The issue is reported here
  * https://github.com/oracle/node-oracledb/issues/1711
  *
- * It basically verifies if the object type created for a given type is freed along with
- * its attributes. If memory has increased more than 10MB , issue is present
- * and program asserts.
+ * It basically verifies if the object type created for a given type is freed
+ * along with its attributes. If memory has increased more than 10MB , issue
+ * is present and program asserts.
  *
  * The program runs for 5 mins and exits which means memory is not leaking.
  *
@@ -64,21 +64,21 @@ async function setUp() {
     connection = await pool.getConnection();
 
     let sql = `CREATE OR REPLACE TYPE my_custom_type AS OBJECT (
-  id NUMBER,
-  name VARCHAR2(100)
+      id NUMBER,
+      name VARCHAR2(100)
 );`;
 
     await connection.execute(sql);
 
     sql = `CREATE OR REPLACE PROCEDURE my_custom_proc (
-  p_in IN my_custom_type,
-  p_in_out IN OUT my_custom_type
-) IS
-BEGIN
-  p_in_out.id := p_in_out.id + p_in.id;
-  p_in_out.name := p_in_out.name || p_in.name;
-END my_custom_proc;
-`;
+      p_in IN my_custom_type,
+      p_in_out IN OUT my_custom_type
+      ) IS
+      BEGIN
+        p_in_out.id := p_in_out.id + p_in.id;
+        p_in_out.name := p_in_out.name || p_in.name;
+      END my_custom_proc;
+    `;
     await connection.execute(sql);
   } finally {
     await connection.close();
@@ -145,7 +145,6 @@ async function executeCreateObjclass() {
 
 async function executeProcedureWithReftoObjType() {
   let connection;
-  let objClass;
   try {
     connection = await pool.getConnection();
     await connection.execute(plsql, binds);
@@ -156,18 +155,17 @@ async function executeProcedureWithReftoObjType() {
       await connection.close();
     }
   }
-  nullLogger(typeof objClass);
 }
 
 // It runs the given function in loop.
 // The loop simulates a storm of 50 webrequests coming
 // in every second.
 // We run this for 5 minutes and if memory has not exceeded
-// threshHold, we treat it as success else throw an error.
+// threshold, we treat it as success else throw an error.
 //
 async function runTestLoop(fn) {
   const counter = 50; // concurrent requests.
-  const threshHold = 10;
+  const threshold = 10; // in MB
   const initialMem = process.memoryUsage().heapUsed / 1024 / 1024;
   let finalMem;
 
@@ -180,7 +178,7 @@ async function runTestLoop(fn) {
     finalMem = process.memoryUsage().heapUsed / 1024 / 1024;
     console.log(`Memory Usage: ${finalMem.toFixed(2)} MB`);
 
-    if (finalMem - initialMem > threshHold) {
+    if (finalMem - initialMem > threshold) {
       console.warn('Memory usage exceeded 10 MB! Stopping execution.');
       clearInterval(intervalId); // Stops the interval
       throw new Error(`Memory Usage Exceeded 10MB ${fn.name}: Intial:

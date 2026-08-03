@@ -199,6 +199,7 @@ static void njsVariable_freeBuffer(njsVariableBuffer *buffer)
             njsVariable_free(&buffer->queryVars[i]);
         free(buffer->queryVars);
         buffer->queryVars = NULL;
+        buffer->numQueryVars = 0;
     }
 }
 
