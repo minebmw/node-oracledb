@@ -213,7 +213,9 @@ describe('277. jsonDualityView6.js', function() {
         StudentClass :
         [student_class @INSERT@UPDATE@DELETE
            {StudentClassId : scid,StudentId:stuid }]}`),
-        /ORA-24558:/ //ORA-24558: syntax error encountered in the input string
+        /ORA-24558:|ORA-43464:/
+        // ORA-24558: syntax error encountered in the input string
+        // ORA-43464: GraphQL syntax error reported by newer database versions
       );
 
       await assert.rejects(

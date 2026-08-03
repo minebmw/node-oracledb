@@ -588,7 +588,9 @@ describe('272. jsonDualityView1.js', function() {
                         }`;
       await assert.rejects(
         async () => await connection.execute(query),
-        /ORA-24558:/ //ORA-24558: syntax error encountered in the input string
+        /ORA-24558:|ORA-43464:/
+        // ORA-24558: syntax error encountered in the input string
+        // ORA-43464: GraphQL syntax error reported by newer database versions
       );
     });
 
@@ -652,7 +654,9 @@ describe('272. jsonDualityView1.js', function() {
 
         await assert.rejects(
           async () => await connection.execute(query),
-          /ORA-24558:/ //ORA-24558: syntax error encountered in the input string
+          /ORA-24558:|ORA-43464:/
+          // ORA-24558: syntax error encountered in the input string
+          // ORA-43464: GraphQL syntax error reported by newer database versions
         );
       });
 
