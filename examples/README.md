@@ -81,6 +81,7 @@ File Name                                                 | Description
 [`dbmsoutputpipe.js`](dbmsoutputpipe.js)                  | Show fetching DBMS_OUTPUT by using a pipelined table
 [`dbobject.js`](dbobject.js)                              | Tests Oracle Database Objects
 [`dbobjassocarray.js`](dbobjassocarray.js)                | Tests Associative Array-type dbObjects indexed by integer
+[`deepDataSecurityPool.js`](deepDataSecurityPool.js)      | Tests Deep Data Security feature
 [`demodrop.js`](demodrop.js)                              | Drops the schema objects created by the examples
 [`demosetup.js`](demosetup.js)                            | Used to create common schema objects for the examples
 [`directpathload.js`](directpathload.js)                  | Show usage of directPathLoad api in thin mode
