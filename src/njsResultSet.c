@@ -144,6 +144,8 @@ static void njsResultSet_finalize(napi_env env, void *finalizeData,
     // called and the JS garbage collector does the clean-up
     if (!rs->isNested) {
         njsResultSet_freeQueryVars(rs->queryVars, rs->numQueryVars);
+        rs->queryVars = NULL;
+        rs->numQueryVars = 0;
     }
     free(rs);
 }
@@ -260,6 +262,8 @@ static bool njsResultSet_getRowsPostAsync(njsBaton *baton, napi_env env,
     // clear variables if result set was closed
     if (!rs->handle && !rs->isNested) {
         njsResultSet_freeQueryVars(rs->queryVars, rs->numQueryVars);
+        rs->queryVars = NULL;
+        rs->numQueryVars = 0;
     }
 
     return true;

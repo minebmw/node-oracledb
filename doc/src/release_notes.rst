@@ -24,6 +24,11 @@ Common Changes
 
 #)  Fixed bug where the OSON encoder did not set the correct flags.
 
+#)  Fixed bug causing infinite loop in thin mode due to a race condition during
+    a pooled connection release.
+    See `Issue #1784 <https://github.com/oracle/node-oracledb/issues/1784>`__.
+    (Willian Marques).
+
 Thin Mode Changes
 +++++++++++++++++
 
