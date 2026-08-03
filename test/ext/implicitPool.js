@@ -30,24 +30,29 @@
 *   stop and start pool before starting test to reset stats for comparision.
 *
 *  NODE_ORACLEDB_CONNECTIONSTRING1
-*    'host/servicename:POOLED?POOL_CONNECTION_CLASS=classname & POOL_BOUNDARY=STATEMENT'
-*    '(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=hostname)(PORT=port))(CONNECT_DATA=(SERVICE_NAME=servicename)(SERVER=POOLED)(POOL_BOUNDARY=STATEMENT)))'
+*    'host/servicename:POOLED?POOL_CONNECTION_CLASS=classname&POOL_BOUNDARY=STATEMENT'
+*    '(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=hostname)(PORT=port))
+*     (CONNECT_DATA=(SERVICE_NAME=servicename)(SERVER=POOLED)(POOL_BOUNDARY=STATEMENT)))'
 *
 *  NODE_ORACLEDB_CONNECTIONSTRING2
-*    'host/servicename:POOLED?POOL_CONNECTION_CLASS=classname & POOL_BOUNDARY=TRANSACTION'
-*    '(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=hostname)(PORT=port))(CONNECT_DATA=(SERVICE_NAME=servicename)(SERVER=POOLED)(POOL_BOUNDARY=TRANSACTION)))'
+*    'host/servicename:POOLED?POOL_CONNECTION_CLASS=classname&POOL_BOUNDARY=TRANSACTION'
+*    '(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=hostname)(PORT=port))
+*     (CONNECT_DATA=(SERVICE_NAME=servicename)(SERVER=POOLED)(POOL_BOUNDARY=TRANSACTION)))'
 *
 *  NODE_ORACLEDB_CONNECTIONSTRING3
-*    'host/servicename:POOLED?POOL_CONNECTION_CLASS=classname & POOL_BOUNDARY=STATEMENT & POOL_PURITY=NEW'
-*    '(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=hostname)(PORT=port))(CONNECT_DATA=(SERVICE_NAME=servicename)(SERVER=POOLED)(POOL_BOUNDARY=STATEMENT)(POOL_PURITY=NEW)))'
+*    'host/servicename:POOLED?POOL_CONNECTION_CLASS=classname&POOL_BOUNDARY=STATEMENT&POOL_PURITY=NEW'
+*    '(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=hostname)(PORT=port))
+*     (CONNECT_DATA=(SERVICE_NAME=servicename)(SERVER=POOLED)(POOL_BOUNDARY=STATEMENT)(POOL_PURITY=NEW)))'
 *
 *  NODE_ORACLEDB_CONNECTIONSTRING4
-*    'host/servicename:POOLED?POOL_CONNECTION_CLASS=classname & POOL_BOUNDARY=TRANSACTION & POOL_PURITY=NEW'
-*    '(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=hostname)(PORT=port))(CONNECT_DATA=(SERVICE_NAME=servicename)(SERVER=POOLED)(POOL_BOUNDARY=TRANSACTION)(POOL_PURITY=NEW)))'
+*    'host/servicename:POOLED?POOL_CONNECTION_CLASS=classname&POOL_BOUNDARY=TRANSACTION&POOL_PURITY=NEW'
+*    '(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=hostname)(PORT=port))
+*     (CONNECT_DATA=(SERVICE_NAME=servicename)(SERVER=POOLED)(POOL_BOUNDARY=TRANSACTION)(POOL_PURITY=NEW)))'
 *
 *  NODE_ORACLEDB_CONNECTIONSTRING5
-*    'host/servicename:POOLED?POOL_CONNECTION_CLASS=classname & POOL_BOUNDARY=XYZ & POOL_PURITY=NEW'
-*    '(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=hostname)(PORT=port))(CONNECT_DATA=(SERVICE_NAME=servicename)(POOL_BOUNDARY=XYZ)))'
+*    'host/servicename:POOLED?POOL_CONNECTION_CLASS=classname&POOL_BOUNDARY=XYZ&POOL_PURITY=NEW'
+*    '(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=hostname)(PORT=port))
+*     (CONNECT_DATA=(SERVICE_NAME=servicename)(POOL_BOUNDARY=XYZ)))'
 ******************************************************************************/
 'use strict';
 
@@ -91,7 +96,9 @@ describe('1. implicitPool.js', function() {
       await connection.execute("SELECT 1 FROM DUAL");
     }
     const user = config.user.toUpperCase();
-    const result = await dbaConn.execute(`select cclass_name, num_requests, num_hits, num_misses from v$cpool_cc_stats where cclass_name='${user}.obj1'`);
+    const result = await dbaConn.execute(`
+      select cclass_name, num_requests, num_hits, num_misses
+      from v$cpool_cc_stats where cclass_name='${user}.obj1'`);
     assert.deepStrictEqual(result.rows[0][2], 5);
     await connection.close();
     await pool.close(0);
@@ -235,7 +242,9 @@ describe('1. implicitPool.js', function() {
       await connection.execute("SELECT 1 FROM DUAL");
     }
     const user = config.user.toUpperCase();
-    const result = await dbaConn.execute(`select cclass_name, num_requests, num_hits, num_misses from v$cpool_cc_stats where cclass_name='${user}.obj8'`);
+    const result = await dbaConn.execute(
+      `select cclass_name, num_requests, num_hits,
+      num_misses from v$cpool_cc_stats where cclass_name='${user}.obj8'`);
     assert.deepStrictEqual(result.rows[0][2], 5);
 
     await connection.close();

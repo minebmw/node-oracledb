@@ -1,4 +1,4 @@
-/* Copyright (c) 2025, Oracle and/or its affiliates. */
+/* Copyright (c) 2025, 2026, Oracle and/or its affiliates. */
 
 /******************************************************************************
  *
@@ -29,13 +29,14 @@
  *  Testing Implicit Connection Pooling
  *
  *  Stop and start DRCP Implicit Connection Pool before starting to reset
- *  stats for comparison, change the connection string to use a DRCP pooled server,
- *  and additionally set a POOL_BOUNDARY parameter to the connection string.
- *  The tests are checking the behavior of implicit connection pooling in
- *  node by triggering implicit "get" and "release" callbacks when connections
- *  are used and closed. Each time a new connection is acquired using
- *  oracledb.getConnection(), the tests trigger the G callback (implicit "get").
- *  When a connection is closed, the R callback (implicit "release") is triggered.
+ *  stats for comparison, change the connection string to use a DRCP pooled
+ *  server,and additionally set a POOL_BOUNDARY parameter to the connection
+ *  string.The tests are checking the behavior of implicit connection pooling
+ *  in Node.js by triggering implicit "get" and "release" callbacks when
+ *  connections are used and closed. Each time a new connection is acquired
+ *  usingoracledb.getConnection(), the tests trigger the G callback
+ *  (implicit "get"). When a connection is closed, the R callback
+ *  (implicit "release") is triggered.
  *
  *  Set the env variable : NODE_ORACLEDB_IMPL_CONNECTIONSTRING
  *  NODE_ORACLEDB_IMPL_CONNECTIONSTRING: This env variable should be
@@ -52,17 +53,18 @@ const testsUtil = require('../testsUtil.js');
 describe('1. implicitPool1.js', function() {
   let connection, implicitConnString, isRunnable;
   let transactionBoundary = false;
-  // Helper function to clear any callbacks from the TestImplicitPoolCallbacks table
+  // Helper function to clear any callbacks from the TestImplicitPoolCallbacks
+  // table
   const clearCallbacks = async (conn) => {
     await conn.execute(`TRUNCATE TABLE ${dbConfig.user}.TestImplicitPoolCallbacks`);
     await conn.commit();
   };
 
-  // Helper function to get all callbacks from the TestImplicitPoolCallbacks table
+  // Helper function to get all callbacks from the TestImplicitPoolCallbacks
+  // table
   const getCallbacks = async (conn) => {
     const result = await conn.execute(`SELECT Action
-                                        FROM ${dbConfig.user}.TestImplicitPoolCallbacks
-                                        ORDER BY SeqNum`);
+      FROM ${dbConfig.user}.TestImplicitPoolCallbacks ORDER BY SeqNum`);
     return result.rows;
   };
 
@@ -186,7 +188,7 @@ describe('1. implicitPool1.js', function() {
     });
 
     afterEach(async function() {
-      await conn.close();
+      if (conn) await conn.close();
     });
 
     it('1.1 - executing and fetching from a table', async function() {
@@ -265,6 +267,12 @@ describe('1. implicitPool1.js', function() {
       // Verify callbacks when closing a connection
       await clearCallbacks(connection);
       await conn.execute(`SELECT IntCol FROM TestNumbers`);
+      assert.deepStrictEqual(await getCallbacks(connection), [['G'], ['R']]);
+
+      // Closing after an implicit release must remain a no-op for the server
+      // session and must not prevent the client connection from being closed.
+      await conn.close();
+      conn = null;
       assert.deepStrictEqual(await getCallbacks(connection), [['G'], ['R']]);
     }); // 1.7
 
@@ -532,6 +540,12 @@ describe('1. implicitPool1.js', function() {
       );
 
       assert.strictEqual(result.rows[0][0], 1);
+
+      // The following statement needs a new implicit get because auto-commit
+      // released the session used for the DML.
+      await clearCallbacks(connection);
+      await conn.execute(`SELECT IntCol FROM TestNumbers WHERE IntCol = 1`);
+      assert.deepStrictEqual(await getCallbacks(connection), [['G'], ['R']]);
     }); // 1.17
 
     it('1.18 boundary behavior with transaction rollback', async function() {
@@ -563,7 +577,48 @@ describe('1. implicitPool1.js', function() {
         `SELECT COUNT(*) FROM TestTempTable WHERE IntCol IN (504, 505)`
       );
       assert.strictEqual(result.rows[0][0], 0);
+
+      // A rollback ends the transaction and releases the implicit session;
+      // the next statement must acquire and release a session again.
+      await clearCallbacks(connection);
+      await conn.execute(`SELECT IntCol FROM TestNumbers WHERE IntCol = 1`);
+      assert.deepStrictEqual(await getCallbacks(connection), [['G'], ['R']]);
     }); // 1.18
+
+    it('1.19 partial ResultSet fetch retains the session until ResultSet close', async function() {
+      await clearCallbacks(connection);
+      const result = await conn.execute(
+        `SELECT IntCol FROM TestNumbers ORDER BY IntCol`,
+        [],
+        { resultSet: true }
+      );
+
+      const rows = await result.resultSet.getRows(1);
+      assert.deepStrictEqual(rows, [[1]]);
+      // An open cursor makes the implicit session stateful, so it cannot be
+      // released at the end of the fetch call.
+      assert.deepStrictEqual(await getCallbacks(connection), [['G']]);
+
+      await result.resultSet.close();
+      assert.deepStrictEqual(await getCallbacks(connection), [['G'], ['R']]);
+    }); // 1.19
+
+    it('1.20 complete ResultSet fetch releases the session', async function() {
+      await clearCallbacks(connection);
+      const result = await conn.execute(
+        `SELECT IntCol FROM TestNumbers ORDER BY IntCol`,
+        [],
+        { resultSet: true }
+      );
+
+      const rows = await result.resultSet.getRows(101);
+      assert.strictEqual(rows.length, 100);
+      assert.strictEqual(rows[0][0], 1);
+      assert.strictEqual(rows[99][0], 100);
+      // Fetching to end-of-data closes the cursor and allows an implicit
+      // release without requiring an explicit connection close.
+      assert.deepStrictEqual(await getCallbacks(connection), [['G'], ['R']]);
+    }); // 1.20
   });
 
   describe('2. Pool Tests', function() {
@@ -705,5 +760,21 @@ describe('1. implicitPool1.js', function() {
 
       await conn.execute(testsUtil.sqlDropTable('lobTable'));
     }); // 2.4
+
+    it('2.5 partial ResultSet fetch from a pool retains the session until ResultSet close', async function() {
+      await clearCallbacks(connection);
+      const result = await conn.execute(
+        `SELECT IntCol FROM TestNumbers ORDER BY IntCol`,
+        [],
+        { resultSet: true }
+      );
+
+      const rows = await result.resultSet.getRows(1);
+      assert.deepStrictEqual(rows, [[1]]);
+      assert.deepStrictEqual(await getCallbacks(connection), [['G']]);
+
+      await result.resultSet.close();
+      assert.deepStrictEqual(await getCallbacks(connection), [['G'], ['R']]);
+    }); // 2.5
   });
 });
