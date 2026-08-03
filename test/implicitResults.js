@@ -1,4 +1,4 @@
-/* Copyright (c) 2019, 2023, Oracle and/or its affiliates. */
+/* Copyright (c) 2019, 2026, Oracle and/or its affiliates. */
 
 /******************************************************************************
  *
@@ -203,5 +203,75 @@ describe('192. implicitResults.js', function() {
     await results.implicitResults[1].close();
     await conn.close();
   }); // 192.4
+
+  it('192.5 re-executes PL/SQL returning REFCURSORs with DBMS_SQL.RETURN_RESULT after normal query', async () => {
+    const conn = await oracledb.getConnection(dbConfig);
+    const tableMain = 'nodb_irs_rows_main';
+    const tableChild = 'nodb_irs_rows_child';
+    const procName = 'nodb_irs_rows_proc';
+
+    try {
+      await testsUtil.dropProcedure(conn, procName);
+      await testsUtil.dropTable(conn, tableChild);
+      await testsUtil.dropTable(conn, tableMain);
+
+      await conn.execute(`CREATE TABLE ${tableMain} (id NUMBER PRIMARY KEY, status VARCHAR2(80))`);
+      await conn.execute(`CREATE TABLE ${tableChild} (id NUMBER PRIMARY KEY, child_status VARCHAR2(80))`);
+      await conn.execute(`INSERT INTO ${tableMain} VALUES (1, 'row-main-1')`);
+      await conn.execute(`INSERT INTO ${tableMain} VALUES (2, 'row-main-2')`);
+      await conn.execute(`INSERT INTO ${tableChild} VALUES (1, 'child-1')`);
+      await conn.execute(`INSERT INTO ${tableChild} VALUES (2, 'child-2')`);
+
+      await conn.execute(`
+        CREATE OR REPLACE PROCEDURE ${procName} AS
+          c_main SYS_REFCURSOR;
+          c_child SYS_REFCURSOR;
+        BEGIN
+          OPEN c_main FOR SELECT id, status FROM ${tableMain} ORDER BY id;
+          DBMS_SQL.RETURN_RESULT(c_main);
+
+          OPEN c_child FOR SELECT id, child_status FROM ${tableChild} ORDER BY id;
+          DBMS_SQL.RETURN_RESULT(c_child);
+        END;`);
+
+      const plsql = `BEGIN ${procName}; END;`;
+      let results = await conn.execute(plsql);
+      assert.deepStrictEqual(results.implicitResults, [
+        [
+          [1, 'row-main-1'],
+          [2, 'row-main-2']
+        ],
+        [
+          [1, 'child-1'],
+          [2, 'child-2']
+        ]
+      ]);
+
+      const ping = await conn.execute('SELECT 1 FROM dual');
+      assert.deepStrictEqual(ping.rows, [[1]]);
+
+      results = await conn.execute(plsql, [], { resultSet: true });
+      assert.strictEqual(results.implicitResults.length, 2);
+
+      let rows = await results.implicitResults[0].getRows();
+      assert.deepStrictEqual(rows, [
+        [1, 'row-main-1'],
+        [2, 'row-main-2']
+      ]);
+      await results.implicitResults[0].close();
+
+      rows = await results.implicitResults[1].getRows();
+      assert.deepStrictEqual(rows, [
+        [1, 'child-1'],
+        [2, 'child-2']
+      ]);
+      await results.implicitResults[1].close();
+    } finally {
+      await testsUtil.dropProcedure(conn, procName);
+      await testsUtil.dropTable(conn, tableChild);
+      await testsUtil.dropTable(conn, tableMain);
+      await conn.close();
+    }
+  }); // 192.5
 
 });
