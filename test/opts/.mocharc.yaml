@@ -309,3 +309,4 @@ spec:
   - test/sqlAssert.js
   - test/appContext.js
   - test/dbObject22.js
+  - test/endUserSecurityContext.js

@@ -6771,3 +6771,7 @@ Overview of node-oracledb functional tests
     327.1.2 fetches a DbObject with 101 attributes
     327.1.3 rejects a DbObject with a different DbObject type
     327.1.4 rejects a non-existent DbObject type
+
+  328. endUserSecurityContext.js
+    328.1 EndUserSecurityContext attributes
+      328.1.1 ignores non-enumerable nested attribute properties

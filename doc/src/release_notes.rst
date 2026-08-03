@@ -40,6 +40,9 @@ Thin Mode Changes
     ``enqTime`` property in
     :ref:`Advanced Queuing (AQ) messages <_aqmessage_class_attributes>`.
 
+#)  Fixed bug to make JSON serialization to include only enumerable JavaScript object
+    properties.
+
 Thick Mode Changes
 ++++++++++++++++++
 
