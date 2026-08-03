@@ -22,6 +22,8 @@ Common Changes
 #)  Fixed bug that allowed invalid ``dataRoles`` entries in
     :ref:`oracledb.EndUserSecurityContext <endusersecuritycontextclass>`.
 
+#)  Fixed bug where the OSON encoder did not set the correct flags.
+
 Thin Mode Changes
 +++++++++++++++++
 
