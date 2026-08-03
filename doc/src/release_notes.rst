@@ -16,6 +16,12 @@ and the changes that affect the optional :ref:`Thick Mode <enablingthick>`.
 node-oracledb `v7.1.0 <https://github.com/oracle/node-oracledb/compare/v7.0.1...v7.1.0>`__ (TBD)
 -----------------------------------------------------------------------------------------------------------
 
+Common Changes
++++++++++++++++
+
+#)  Fixed bug that allowed invalid ``dataRoles`` entries in
+    :ref:`oracledb.EndUserSecurityContext <endusersecuritycontextclass>`.
+
 Thin Mode Changes
 +++++++++++++++++
 

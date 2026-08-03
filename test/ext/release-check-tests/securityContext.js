@@ -724,7 +724,7 @@ const dbConfig = require('../../dbconfig.js');
     });
 
     it("327.3.4 Data role entries and array copy", () => {
-      const roles = ["role-one", null];
+      const roles = ["role-one", "role-two"];
       const securityContext = new oracledb.EndUserSecurityContext({
         databaseAccessToken: "db-token-roles",
         endUserToken: "user-token-roles",
@@ -732,7 +732,7 @@ const dbConfig = require('../../dbconfig.js');
       });
 
       const payload = decodeContextPayload(securityContext);
-      assert.deepStrictEqual(payload.data_roles, ["role-one", null]);
+      assert.deepStrictEqual(payload.data_roles, ["role-one", "role-two"]);
       assert.notStrictEqual(payload.data_roles, roles);
     });
 
@@ -1048,7 +1048,30 @@ const dbConfig = require('../../dbconfig.js');
       );
     });
 
-    it("327.5.9 Optional fields omitted in payloadForWire", () => {
+    it("327.5.9 Invalid dataRoles entries are rejected", () => {
+      const invalideRoles = [
+        42,
+        { role: "role-one"},
+        null,
+        undefined,
+        "",
+        "  \t\n",
+      ];
+
+      for (const invalidRole of invalideRoles) {
+        assert.throws(
+          () =>
+            new oracledb.EndUserSecurityContext({
+              databaseAccessToken: "db-token-invalid-role-entry",
+              endUserToken: "user-token-invalid-role-entry",
+              dataRoles: ["role-one", invalidRole],
+            }),
+          /NJS-005:/,
+        );
+      }
+    });
+
+    it("327.5.10 Optional fields omitted in payloadForWire", () => {
       const securityContext = new oracledb.EndUserSecurityContext({
         databaseAccessToken: "db-token-minimal",
         endUserToken: "user-token-minimal",
@@ -1061,7 +1084,7 @@ const dbConfig = require('../../dbconfig.js');
       });
     });
 
-    it("327.5.10 Repeated payloadForWire calls", () => {
+    it("327.5.11 Repeated payloadForWire calls", () => {
       const securityContext = new oracledb.EndUserSecurityContext({
         databaseAccessToken: "db-token-repeat-payload",
         endUserToken: "user-token-repeat-payload",
